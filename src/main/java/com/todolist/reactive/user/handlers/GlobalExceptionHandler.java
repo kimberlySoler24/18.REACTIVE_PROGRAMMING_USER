@@ -14,10 +14,14 @@ public class GlobalExceptionHandler {
         return Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage()));
     }
 
-    @ExceptionHandler({ValidationException.class})
-    public Mono<ResponseEntity<String>> handlerValidationException(ValidationException ex){
+    @ExceptionHandler({ValidationOnlyEmailException.class})
+    public Mono<ResponseEntity<String>> ValidationOnlyEmailException(ValidationException ex){
         return Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage()));
     }
 
-
+    @ExceptionHandler({ValidationException.class})
+    public Mono<ResponseEntity<ValidationErrorResponse>> handlerUserValidationException(ValidationException ex) {
+        ValidationErrorResponse response = new ValidationErrorResponse(ex.getErrors());
+        return Mono.just(new ResponseEntity<>(response, HttpStatus.BAD_REQUEST));
+    }
 }
