@@ -1,24 +1,20 @@
-package com.todolist.reactive.user.models;
+package com.todolist.reactive.user.models.dtos;
 
-import com.todolist.reactive.user.models.dtos.TaskDTO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.relational.core.mapping.Table;
 
 import java.util.List;
 
-@Table("users")
-@Builder
 @AllArgsConstructor
 @Data
+@Builder
 @NoArgsConstructor
-public class UserEntity {
-    @Id
+public class GetUserDTO {
     private Long id;
     private String name;
     private String email;
     private String password;
+    private List<TaskDTO> tasks;
 }

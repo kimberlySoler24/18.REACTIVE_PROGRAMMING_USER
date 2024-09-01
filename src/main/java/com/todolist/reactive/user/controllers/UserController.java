@@ -3,6 +3,7 @@ package com.todolist.reactive.user.controllers;
 import com.todolist.reactive.user.handlers.UserNotFoundException;
 import com.todolist.reactive.user.handlers.ValidationException;
 import com.todolist.reactive.user.models.UserEntity;
+import com.todolist.reactive.user.models.dtos.GetUserDTO;
 import com.todolist.reactive.user.models.dtos.UserDTO;
 import com.todolist.reactive.user.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,12 +20,12 @@ public class UserController {
     private UserService userService;
 
     @GetMapping("/{id}")
-    public Mono<UserEntity> getUserById(@PathVariable Long id) throws InterruptedException{
+    public Mono<GetUserDTO> getUserById(@PathVariable Long id) throws InterruptedException{
         return userService.getUserById(id);
     }
 
     @GetMapping
-    public Flux<UserEntity> getAllUsers() {
+    public Flux<GetUserDTO> getAllUsers() {
         return userService.getAllUsers();
     }
 

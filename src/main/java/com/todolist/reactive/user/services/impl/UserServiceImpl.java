@@ -5,6 +5,8 @@ import com.todolist.reactive.user.handlers.ValidationException;
 import com.todolist.reactive.user.handlers.ValidationOnlyEmailException;
 import com.todolist.reactive.user.mappers.UserMapper;
 import com.todolist.reactive.user.models.UserEntity;
+import com.todolist.reactive.user.models.dtos.GetUserDTO;
+import com.todolist.reactive.user.models.dtos.TaskDTO;
 import com.todolist.reactive.user.models.dtos.UserDTO;
 import com.todolist.reactive.user.repositories.UserRepository;
 import com.todolist.reactive.user.services.UserService;
@@ -16,6 +18,7 @@ import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
+import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -29,20 +32,42 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private UserValidator userValidator;
     private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
-    @Override
-    public Mono<UserEntity> getUserById(Long id) throws InterruptedException{
 
-        return userRepository.findById(id).switchIfEmpty(Mono.error
+    private WebClient webClient = WebClient.builder().baseUrl("http://localhost:8080/api/tasks").build();
+    @Override
+    public Mono<GetUserDTO> getUserById(Long id) throws InterruptedException{
+        return userRepository.findById(id).flatMap( user ->{
+                    GetUserDTO getUserDto = new GetUserDTO();
+                    getUserDto.setName(user.getName());
+                    getUserDto.setId(user.getId());
+                    getUserDto.setEmail(user.getEmail());
+                    return getTasksFromUser(user.getEmail())
+                            .collectList()
+                            .flatMap(taskDTOS -> {
+                                getUserDto.setTasks(taskDTOS);
+                                return Mono.just(getUserDto);
+                                    });
+                }).switchIfEmpty(Mono.error
                 (new UserNotFoundException("User not found with id: " + id)))
                 .doOnSubscribe(subscription -> logger.info("Request to retrieve user by id: {}", id))
                 .doOnNext(users -> logger.info("got user by id: {}", id))
                 .doOnError(error -> logger.error("Error retrieving user: {}", error.getMessage()));
     }
     @Override
-    public Flux<UserEntity> getAllUsers() {
+    public Flux<GetUserDTO> getAllUsers() {
 
-        return userRepository.findAll()
-                .switchIfEmpty(Mono.error
+        return userRepository.findAll().flatMap( user ->
+            getTasksFromUser(user.getEmail())
+                    .collectList()
+                    .flatMap( taskDTOS -> {
+                        GetUserDTO getUserDto = new GetUserDTO();
+                        getUserDto.setName(user.getName());
+                        getUserDto.setId(user.getId());
+                        getUserDto.setEmail(user.getEmail());
+                        getUserDto.setTasks(taskDTOS);
+                        return Mono.just(getUserDto);
+                    })
+                ).switchIfEmpty(Mono.error
                                 (new UserNotFoundException("we don't find users on database")))
                 .doOnSubscribe(subscription -> logger.info("Request to retrieve all users"))
                 .doOnNext(users -> logger.debug("Retrieved user: {}", users.getName()))
@@ -117,6 +142,11 @@ public class UserServiceImpl implements UserService {
         if(atIndex < 1 || rest < 2){
             throw new ValidationOnlyEmailException("invalid Email");
         };
+    }
+
+    private Flux<TaskDTO> getTasksFromUser(String email){
+        return webClient.get().uri("/user/" + email)
+                .retrieve().bodyToFlux(TaskDTO.class);
     }
 
 }
