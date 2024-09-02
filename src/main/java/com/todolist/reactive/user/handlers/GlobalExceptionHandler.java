@@ -14,6 +14,11 @@ public class GlobalExceptionHandler {
         return Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage()));
     }
 
+    @ExceptionHandler({UsernameAlreadyExistException.class})
+    public Mono<ResponseEntity<String>> handlerUserAlreadyExistException(UserNotFoundException ex){
+        return Mono.just(ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage()));
+    }
+
     @ExceptionHandler({ValidationOnlyEmailException.class})
     public Mono<ResponseEntity<String>> ValidationOnlyEmailException(ValidationException ex){
         return Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage()));
