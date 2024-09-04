@@ -12,20 +12,20 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
-@RestController
-@RequestMapping("/api/auth")
-public class AuthenticationController {
-    @Autowired
-    private AuthenticationService authenticationService;
-    @PostMapping("/register")
-    public Mono<ResponseEntity<String>> registerUser(@RequestBody UserDTO registrationDto) throws Exception {
-        return authenticationService.registerUser(registrationDto)
-                .then(Mono.just(ResponseEntity.ok("Eliminado correctamente")));
-    }
-
-    @PostMapping("/login")
-    public Mono<ResponseEntity<String>> loginUser(@RequestBody LoginUserDTO loginRequest) throws Exception{
-        return authenticationService.loginUser(loginRequest)
-                .map(jwt -> ResponseEntity.ok(jwt));
-    }
-}
+//@RestController
+//@RequestMapping("/api/auth")
+//public class AuthenticationController {
+//    @Autowired
+//    private AuthenticationService authenticationService;
+//    @PostMapping("/register")
+//    public Mono<ResponseEntity<String>> registerUser(@RequestBody UserDTO registrationDto) throws Exception {
+//        return authenticationService.registerUser(registrationDto)
+//                .then(Mono.just(ResponseEntity.ok("Eliminado correctamente")));
+//    }
+//
+//    @PostMapping("/login")
+//    public Mono<ResponseEntity<String>> loginUser(@RequestBody LoginUserDTO loginRequest) throws Exception{
+//        return authenticationService.loginUser(loginRequest)
+//                .map(jwt -> ResponseEntity.ok(jwt));
+//    }
+//}

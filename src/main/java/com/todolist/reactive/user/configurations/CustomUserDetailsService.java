@@ -9,19 +9,19 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 
-@Service
-public class CustomUserDetailsService implements ReactiveUserDetailsService {
-    @Autowired
-    private  UserRepository userRepository;
-    public CustomUserDetailsService(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
-
-    @Override
-    public Mono<UserDetails> findByUsername(String email) {
-        return userRepository.findByEmail(email)
-                .switchIfEmpty(Mono.error(new UsernameNotFoundException("User not found with username: " + email)))
-                .map(userEntity -> new User(userEntity.getEmail(), userEntity.getPassword(),
-                        AuthorityUtils.createAuthorityList(userEntity.getRole().toString())));
-    }
-}
+//@Service
+//public class CustomUserDetailsService implements ReactiveUserDetailsService {
+//    @Autowired
+//    private  UserRepository userRepository;
+//    public CustomUserDetailsService(UserRepository userRepository) {
+//        this.userRepository = userRepository;
+//    }
+//
+//    @Override
+//    public Mono<UserDetails> findByUsername(String email) {
+//        return userRepository.findByEmail(email)
+//                .switchIfEmpty(Mono.error(new UsernameNotFoundException("User not found with username: " + email)))
+//                .map(userEntity -> new User(userEntity.getEmail(), userEntity.getPassword(),
+//                        AuthorityUtils.createAuthorityList(userEntity.getRole().toString())));
+//    }
+//}
