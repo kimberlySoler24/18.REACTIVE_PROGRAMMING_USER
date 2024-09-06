@@ -13,4 +13,5 @@ public interface UserService {
     Mono<UserEntity> createUser(UserDTO createUser);
     Mono<Void> deleteUser(Long id);
     Mono<UserEntity> updateUser(UserEntity updateuser);
+    Mono<UserEntity> getUserByEmail(String email);
 }

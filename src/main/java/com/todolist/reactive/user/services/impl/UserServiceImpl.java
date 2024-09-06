@@ -1,5 +1,6 @@
 package com.todolist.reactive.user.services.impl;
 
+import com.todolist.reactive.user.configurations.ConfigPasswordEncoder;
 import com.todolist.reactive.user.handlers.UserNotFoundException;
 import com.todolist.reactive.user.handlers.ValidationException;
 import com.todolist.reactive.user.handlers.ValidationOnlyEmailException;
@@ -15,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
@@ -32,7 +34,8 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private UserValidator userValidator;
     private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
-
+    @Autowired
+    private PasswordEncoder passwordEncoder;
     private WebClient webClient = WebClient.builder().baseUrl("http://localhost:8080/api/tasks").build();
     @Override
     public Mono<GetUserDTO> getUserById(Long id) throws InterruptedException{
@@ -79,6 +82,7 @@ public class UserServiceImpl implements UserService {
         return Mono.just(UserMapper.toUserEntity(newUser))
                 .doOnSubscribe(subscription -> logger.info("Request to create new user: {}", newUser))
                 .flatMap(user -> {
+                    user.setPassword(passwordEncoder.encode(newUser.getPassword()));
                     Errors errors = new BeanPropertyBindingResult(user, "user");
                     userValidator.validate(user, errors);
 
@@ -118,6 +122,16 @@ public class UserServiceImpl implements UserService {
                 .doOnNext(users -> logger.debug("updated user: {}", updateUser.getName()))
                 .doOnError(error -> logger.error("Error update users: {}", error.getMessage()));
     }
+
+    @Override
+    public Mono<UserEntity> getUserByEmail(String email) {
+        return userRepository.findByEmail(email).switchIfEmpty(Mono.error
+                (new UserNotFoundException("User not found with that email: " + email)))
+                .doOnSubscribe(subscription -> logger.info("Request to get user by email: {}", email))
+                .doOnNext(users -> logger.debug("get user by email: {}", email))
+                .doOnError(error -> logger.error("Error get user by email: {}", error.getMessage()));
+    }
+
     @Override
     public Mono<Void> deleteUser(Long id) {
         return userRepository.findById(id)
